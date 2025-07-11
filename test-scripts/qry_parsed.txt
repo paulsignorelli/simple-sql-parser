@@ -1,6 +1,6 @@
-WITH
-DeptStats AS (
-    SELECT
+subquery_1
+
+SELECT
         DepartmentID,
         SUM(Salary) AS TotalDeptSalary,
         COUNT(*) AS NumEmployees,
@@ -9,9 +9,11 @@ DeptStats AS (
         Employees
     GROUP BY
         DepartmentID
-),
-EmpProjects AS (
-    SELECT
+
+
+subquery_2
+
+SELECT
         EmployeeID,
         COUNT(ProjectID) AS ProjectsCompleted,
         MAX(CompletedDate) AS LastProjectDate,
@@ -22,6 +24,54 @@ EmpProjects AS (
         Status = 'Completed'
     GROUP BY
         EmployeeID
+
+subquery_3
+
+SELECT
+    e.EmployeeID,
+    UPPER(e.Name) AS Name,
+    d.Name AS Department,
+    CASE
+        WHEN e.Salary > (
+            SELECT AVG(Salary)
+            FROM Employees
+            WHERE DepartmentID = e.DepartmentID
+        ) THEN CONCAT('Above Average (', CAST(e.Salary AS VARCHAR), ')')
+        ELSE 'Average or Below'
+    END AS SalaryStatus,
+    ep.ProjectsCompleted,
+    YEAR(e.HireDate) AS HireYear,
+    MONTH(e.HireDate) AS HireMonth,
+    COALESCE(ep.LastProjectYear, 'N/A') AS LastProjectYear
+FROM
+    Employees e
+    JOIN Departments d ON e.DepartmentID = d.DepartmentID
+    LEFT JOIN EmpProjects ep ON e.EmployeeID = ep.EmployeeID
+WHERE
+    e.EmployeeID IN (
+        SELECT
+            e2.EmployeeID
+        FROM
+            Employees e2
+            JOIN Departments d2 ON e2.DepartmentID = d2.DepartmentID
+            LEFT JOIN EmpProjects ep2 ON e2.EmployeeID = ep2.EmployeeID
+        WHERE
+            e2.Salary > (
+                SELECT AVG(Salary)
+                FROM Employees
+                WHERE DepartmentID = e2.DepartmentID
+            )
+    )
+    
+_______
+
+
+WITH
+DeptStats AS (
+    <<subquery_1>>
+),
+EmpProjects AS (
+    <<subquery_2>>
 )
 
 SELECT
