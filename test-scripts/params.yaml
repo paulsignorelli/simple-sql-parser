@@ -1,0 +1,6 @@
+endpoint_name: "databricks-claude-3-7-sonnet"
+extract_columns_flag: true
+test_mode: true
+target_table: "users.paul_signorelli.sql_parsing_log"
+columns_chunk_size: 100
+failed_attempts: 5
