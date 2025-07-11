@@ -1,0 +1,808 @@
+WITH
+DeptStats AS (
+    SELECT
+        DepartmentID,
+        SUM(Salary) AS TotalDeptSalary,
+        COUNT(*) AS NumEmployees,
+        AVG(Salary) AS AvgDeptSalary
+    FROM
+        Employees
+    GROUP BY
+        DepartmentID
+),
+EmpProjects AS (
+    SELECT
+        EmployeeID,
+        COUNT(ProjectID) AS ProjectsCompleted,
+        MAX(CompletedDate) AS LastProjectDate,
+        YEAR(MAX(CompletedDate)) AS LastProjectYear
+    FROM
+        Projects
+    WHERE
+        Status = 'Completed'
+    GROUP BY
+        EmployeeID
+)
+
+SELECT
+    e.EmployeeID,
+    UPPER(e.Name) AS Name,
+    d.Name AS Department,
+    CASE
+        WHEN e.Salary > (
+            SELECT AVG(Salary)
+            FROM Employees
+            WHERE DepartmentID = e.DepartmentID
+        ) THEN CONCAT('Above Average (', CAST(e.Salary AS VARCHAR), ')')
+        ELSE 'Average or Below'
+    END AS SalaryStatus,
+    ep.ProjectsCompleted,
+    YEAR(e.HireDate) AS HireYear,
+    MONTH(e.HireDate) AS HireMonth,
+    COALESCE(ep.LastProjectYear, 'N/A') AS LastProjectYear
+FROM
+    Employees e
+    JOIN Departments d ON e.DepartmentID = d.DepartmentID
+    LEFT JOIN EmpProjects ep ON e.EmployeeID = ep.EmployeeID
+WHERE
+    e.EmployeeID IN (
+        SELECT
+            e2.EmployeeID
+        FROM
+            Employees e2
+            JOIN Departments d2 ON e2.DepartmentID = d2.DepartmentID
+            LEFT JOIN EmpProjects ep2 ON e2.EmployeeID = ep2.EmployeeID
+        WHERE
+            e2.Salary > (
+                SELECT AVG(Salary)
+                FROM Employees
+                WHERE DepartmentID = e2.DepartmentID
+            )
+    )
+UNION ALL
+SELECT
+    NULL AS EmployeeID,
+    NULL AS Name,
+    d.Name AS Department,
+    CONCAT('Department Total: ', CAST(ds.TotalDeptSalary AS VARCHAR)) AS SalaryStatus,
+    ds.NumEmployees AS ProjectsCompleted,
+    NULL AS HireYear,
+    NULL AS HireMonth,
+    NULL AS LastProjectYear,
+
+'col1' as col1,
+'col2' as col2,
+'col3' as col3,
+'col4' as col4,
+'col5' as col5,
+'col6' as col6,
+'col7' as col7,
+'col8' as col8,
+'col9' as col9,
+'col10' as col10,
+'col11' as col11,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col12,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col13,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col14,
+'col15' as col15,
+'col16' as col16,
+'col17' as col17,
+'col18' as col18,
+'col19' as col19,
+'col20' as col20,
+'col21' as col21,
+'col22' as col22,
+'col23' as col23,
+'col24' as col24,
+'col25' as col25,
+'col26' as col26,
+'col27' as col27,
+'col28' as col28,
+'col29' as col29,
+'col30' as col30,
+'col31' as col31,
+'col32' as col32,
+'col33' as col33,
+'col34' as col34,
+'col35' as col35,
+'col36' as col36,
+'col37' as col37,
+'col38' as col38,
+'col39' as col39,
+'col40' as col40,
+'col41' as col41,
+'col42' as col42,
+'col43' as col43,
+'col44' as col44,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col45,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col46,
+'col47' as col47,
+'col48' as col48,
+'col49' as col49,
+'col50' as col50,
+'col51' as col51,
+'col52' as col52,
+'col53' as col53,
+'col54' as col54,
+'col55' as col55,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col56,
+'col57' as col57,
+'col58' as col58,
+'col59' as col59,
+'col60' as col60,
+'col61' as col61,
+'col62' as col62,
+'col63' as col63,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col64,
+'col65' as col65,
+'col66' as col66,
+'col67' as col67,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col68,
+'col69' as col69,
+'col70' as col70,
+'col71' as col71,
+'col72' as col72,
+'col73' as col73,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col74,
+'col75' as col75,
+'col76' as col76,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col77,
+'col78' as col78,
+'col79' as col79,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col80,
+'col81' as col81,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col82,
+'col83' as col83,
+'col84' as col84,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col85,
+'col86' as col86,
+'col87' as col87,
+'col88' as col88,
+'col89' as col89,
+'col90' as col90,
+'col91' as col91,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col92,
+'col93' as col93,
+'col94' as col94,
+'col95' as col95,
+'col96' as col96,
+'col97' as col97,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col98,
+'col99' as col99,
+'col100' as col100,
+'col101' as col101,
+'col102' as col102,
+'col103' as col103,
+'col104' as col104,
+'col105' as col105,
+'col106' as col106,
+'col107' as col107,
+'col108' as col108,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col109,
+'col110' as col110,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col111,
+'col112' as col112,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col113,
+'col114' as col114,
+'col115' as col115,
+'col116' as col116,
+'col117' as col117,
+'col118' as col118,
+'col119' as col119,
+'col120' as col120,
+'col121' as col121,
+'col122' as col122,
+'col123' as col123,
+'col124' as col124,
+'col125' as col125,
+'col126' as col126,
+'col127' as col127,
+'col128' as col128,
+'col129' as col129,
+'col130' as col130,
+'col131' as col131,
+'col132' as col132,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col133,
+'col134' as col134,
+'col135' as col135,
+'col136' as col136,
+'col137' as col137,
+'col138' as col138,
+'col139' as col139,
+'col140' as col140,
+'col141' as col141,
+'col142' as col142,
+'col143' as col143,
+'col144' as col144,
+'col145' as col145,
+'col146' as col146,
+'col147' as col147,
+'col148' as col148,
+'col149' as col149,
+'col150' as col150,
+'col151' as col151,
+'col152' as col152,
+'col153' as col153,
+'col154' as col154,
+'col155' as col155,
+'col156' as col156,
+'col157' as col157,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col158,
+'col159' as col159,
+'col160' as col160,
+'col161' as col161,
+'col162' as col162,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col163,
+'col164' as col164,
+'col165' as col165,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col166,
+'col167' as col167,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col168,
+'col169' as col169,
+'col170' as col170,
+'col171' as col171,
+'col172' as col172,
+'col173' as col173,
+'col174' as col174,
+'col175' as col175,
+'col176' as col176,
+'col177' as col177,
+'col178' as col178,
+'col179' as col179,
+'col180' as col180,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col181,
+'col182' as col182,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col183,
+'col184' as col184,
+'col185' as col185,
+'col186' as col186,
+'col187' as col187,
+'col188' as col188,
+'col189' as col189,
+'col190' as col190,
+'col191' as col191,
+'col192' as col192,
+'col193' as col193,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col194,
+'col195' as col195,
+'col196' as col196,
+'col197' as col197,
+'col198' as col198,
+'col199' as col199,
+'col200' as col200,
+'col201' as col201,
+'col202' as col202,
+'col203' as col203,
+'col204' as col204,
+'col205' as col205,
+'col206' as col206,
+'col207' as col207,
+'col208' as col208,
+'col209' as col209,
+'col210' as col210,
+'col211' as col211,
+'col212' as col212,
+'col213' as col213,
+'col214' as col214,
+'col215' as col215,
+'col216' as col216,
+'col217' as col217,
+'col218' as col218,
+'col219' as col219,
+'col220' as col220,
+'col221' as col221,
+'col222' as col222,
+'col223' as col223,
+'col224' as col224,
+'col225' as col225,
+'col226' as col226,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col227,
+'col228' as col228,
+'col229' as col229,
+'col230' as col230,
+'col231' as col231,
+'col232' as col232,
+'col233' as col233,
+'col234' as col234,
+'col235' as col235,
+'col236' as col236,
+'col237' as col237,
+'col238' as col238,
+'col239' as col239,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col240,
+'col241' as col241,
+'col242' as col242,
+'col243' as col243,
+'col244' as col244,
+'col245' as col245,
+'col246' as col246,
+'col247' as col247,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col248,
+'col249' as col249,
+'col250' as col250,
+'col251' as col251,
+'col252' as col252,
+'col253' as col253,
+'col254' as col254,
+'col255' as col255,
+'col256' as col256,
+'col257' as col257,
+'col258' as col258,
+'col259' as col259,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col260,
+'col261' as col261,
+'col262' as col262,
+'col263' as col263,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col264,
+'col265' as col265,
+'col266' as col266,
+'col267' as col267,
+'col268' as col268,
+'col269' as col269,
+'col270' as col270,
+'col271' as col271,
+'col272' as col272,
+'col273' as col273,
+'col274' as col274,
+'col275' as col275,
+'col276' as col276,
+'col277' as col277,
+'col278' as col278,
+'col279' as col279,
+'col280' as col280,
+'col281' as col281,
+'col282' as col282,
+'col283' as col283,
+'col284' as col284,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col285,
+'col286' as col286,
+'col287' as col287,
+'col288' as col288,
+'col289' as col289,
+'col290' as col290,
+'col291' as col291,
+'col292' as col292,
+'col293' as col293,
+'col294' as col294,
+'col295' as col295,
+'col296' as col296,
+'col297' as col297,
+'col298' as col298,
+'col299' as col299,
+'col300' as col300,
+'col301' as col301,
+'col302' as col302,
+'col303' as col303,
+'col304' as col304,
+'col305' as col305,
+'col306' as col306,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col307,
+'col308' as col308,
+'col309' as col309,
+'col310' as col310,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col311,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col312,
+'col313' as col313,
+'col314' as col314,
+'col315' as col315,
+'col316' as col316,
+'col317' as col317,
+'col318' as col318,
+'col319' as col319,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col320,
+'col321' as col321,
+'col322' as col322,
+'col323' as col323,
+'col324' as col324,
+'col325' as col325,
+'col326' as col326,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col327,
+'col328' as col328,
+'col329' as col329,
+'col330' as col330,
+'col331' as col331,
+'col332' as col332,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col333,
+'col334' as col334,
+'col335' as col335,
+'col336' as col336,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col337,
+'col338' as col338,
+'col339' as col339,
+'col340' as col340,
+'col341' as col341,
+'col342' as col342,
+'col343' as col343,
+'col344' as col344,
+'col345' as col345,
+'col346' as col346,
+'col347' as col347,
+'col348' as col348,
+'col349' as col349,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col350,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col351,
+'col352' as col352,
+'col353' as col353,
+'col354' as col354,
+'col355' as col355,
+'col356' as col356,
+'col357' as col357,
+'col358' as col358,
+'col359' as col359,
+'col360' as col360,
+'col361' as col361,
+'col362' as col362,
+'col363' as col363,
+'col364' as col364,
+'col365' as col365,
+'col366' as col366,
+'col367' as col367,
+'col368' as col368,
+'col369' as col369,
+'col370' as col370,
+'col371' as col371,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col372,
+'col373' as col373,
+'col374' as col374,
+'col375' as col375,
+'col376' as col376,
+'col377' as col377,
+'col378' as col378,
+'col379' as col379,
+'col380' as col380,
+'col381' as col381,
+'col382' as col382,
+'col383' as col383,
+'col384' as col384,
+'col385' as col385,
+'col386' as col386,
+'col387' as col387,
+'col388' as col388,
+'col389' as col389,
+'col390' as col390,
+'col391' as col391,
+'col392' as col392,
+'col393' as col393,
+'col394' as col394,
+'col395' as col395,
+'col396' as col396,
+'col397' as col397,
+'col398' as col398,
+'col399' as col399,
+'col400' as col400,
+'col401' as col401,
+'col402' as col402,
+'col403' as col403,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col404,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col405,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col406,
+'col407' as col407,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col408,
+'col409' as col409,
+'col410' as col410,
+'col411' as col411,
+'col412' as col412,
+'col413' as col413,
+'col414' as col414,
+'col415' as col415,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col416,
+'col417' as col417,
+'col418' as col418,
+'col419' as col419,
+'col420' as col420,
+'col421' as col421,
+'col422' as col422,
+'col423' as col423,
+'col424' as col424,
+'col425' as col425,
+'col426' as col426,
+'col427' as col427,
+'col428' as col428,
+'col429' as col429,
+'col430' as col430,
+'col431' as col431,
+'col432' as col432,
+'col433' as col433,
+'col434' as col434,
+'col435' as col435,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col436,
+'col437' as col437,
+'col438' as col438,
+'col439' as col439,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col440,
+'col441' as col441,
+'col442' as col442,
+'col443' as col443,
+'col444' as col444,
+'col445' as col445,
+'col446' as col446,
+'col447' as col447,
+'col448' as col448,
+'col449' as col449,
+'col450' as col450,
+'col451' as col451,
+'col452' as col452,
+'col453' as col453,
+'col454' as col454,
+'col455' as col455,
+'col456' as col456,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col457,
+'col458' as col458,
+'col459' as col459,
+'col460' as col460,
+'col461' as col461,
+'col462' as col462,
+'col463' as col463,
+'col464' as col464,
+'col465' as col465,
+'col466' as col466,
+'col467' as col467,
+'col468' as col468,
+'col469' as col469,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col470,
+'col471' as col471,
+'col472' as col472,
+'col473' as col473,
+'col474' as col474,
+'col475' as col475,
+'col476' as col476,
+'col477' as col477,
+'col478' as col478,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col479,
+'col480' as col480,
+'col481' as col481,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col482,
+'col483' as col483,
+'col484' as col484,
+'col485' as col485,
+'col486' as col486,
+'col487' as col487,
+'col488' as col488,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col489,
+'col490' as col490,
+'col491' as col491,
+'col492' as col492,
+'col493' as col493,
+'col494' as col494,
+'col495' as col495,
+'col496' as col496,
+'col497' as col497,
+'col498' as col498,
+'col499' as col499,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col500,
+'col501' as col501,
+'col502' as col502,
+'col503' as col503,
+'col504' as col504,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col505,
+'col506' as col506,
+'col507' as col507,
+'col508' as col508,
+'col509' as col509,
+'col510' as col510,
+'col511' as col511,
+'col512' as col512,
+'col513' as col513,
+'col514' as col514,
+'col515' as col515,
+'col516' as col516,
+'col517' as col517,
+'col518' as col518,
+'col519' as col519,
+'col520' as col520,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col521,
+'col522' as col522,
+'col523' as col523,
+'col524' as col524,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col525,
+'col526' as col526,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col527,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col528,
+'col529' as col529,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col530,
+'col531' as col531,
+'col532' as col532,
+'col533' as col533,
+'col534' as col534,
+'col535' as col535,
+'col536' as col536,
+'col537' as col537,
+'col538' as col538,
+'col539' as col539,
+'col540' as col540,
+'col541' as col541,
+'col542' as col542,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col543,
+'col544' as col544,
+'col545' as col545,
+'col546' as col546,
+'col547' as col547,
+'col548' as col548,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col549,
+'col550' as col550,
+'col551' as col551,
+'col552' as col552,
+'col553' as col553,
+'col554' as col554,
+'col555' as col555,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col556,
+'col557' as col557,
+'col558' as col558,
+'col559' as col559,
+'col560' as col560,
+'col561' as col561,
+'col562' as col562,
+'col563' as col563,
+'col564' as col564,
+'col565' as col565,
+'col566' as col566,
+'col567' as col567,
+'col568' as col568,
+'col569' as col569,
+'col570' as col570,
+'col571' as col571,
+'col572' as col572,
+'col573' as col573,
+'col574' as col574,
+'col575' as col575,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col576,
+'col577' as col577,
+'col578' as col578,
+'col579' as col579,
+'col580' as col580,
+'col581' as col581,
+'col582' as col582,
+'col583' as col583,
+'col584' as col584,
+'col585' as col585,
+'col586' as col586,
+'col587' as col587,
+'col588' as col588,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col589,
+'col590' as col590,
+'col591' as col591,
+'col592' as col592,
+'col593' as col593,
+'col594' as col594,
+'col595' as col595,
+'col596' as col596,
+'col597' as col597,
+'col598' as col598,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL(SELECT COUNT(*) FROM Employees WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col599
+FROM
+    DeptStats ds
+    JOIN Departments d ON ds.DepartmentID = d.DepartmentID;
