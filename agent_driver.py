@@ -63,10 +63,16 @@
 # MAGIC ############################################
 # MAGIC # Define your LLM endpoint and system prompt
 # MAGIC ############################################
-# MAGIC LLM_ENDPOINT_NAME = "databricks-claude-3-7-sonnet"
+# MAGIC import yaml
+# MAGIC with open("agent_config.yaml", "r") as file:
+# MAGIC     prompts = yaml.safe_load(file)
+# MAGIC
+# MAGIC # LLM_ENDPOINT_NAME = "databricks-claude-3-7-sonnet"
+# MAGIC LLM_ENDPOINT_NAME = prompts["llm_endpoint_name"]
 # MAGIC llm = ChatDatabricks(endpoint=LLM_ENDPOINT_NAME)
 # MAGIC
-# MAGIC system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
+# MAGIC # system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
+# MAGIC system_prompt = prompts["oracle_to_databricks_system_prompt"]
 # MAGIC
 # MAGIC ###############################################################################
 # MAGIC ## Define tools for your agent, enabling it to retrieve data or take actions
