@@ -1,16 +1,18 @@
 llm_endpoint_name: databricks-claude-3-7-sonnet
-oracle_to_databricks_system_prompt: |
-  Please convert the following Oracle PL/SQL query to equivalent Databricks SQL. Only return the converted query—do not include any extra text, comments, or code fences. If you find any SQL wrapped in << >> (e.g., <<subquery_1>>), leave it unchanged and assume it is valid SQL.
+oracle_to_databricks_system_prompt: | 
+Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines
+# oracle_to_databricks_system_prompt: |
+#   Please convert the following Oracle PL/SQL query to equivalent Databricks SQL. Only return the converted query—do not include any extra text, comments, or code fences. If you find any SQL wrapped in << >> (e.g., <<subquery_1>>), leave it unchanged and assume it is valid SQL.
 
-  Conversion rules you MUST follow:
-  - Ensure all Oracle-specific functions and expressions are mapped to their direct Databricks SQL equivalents. For example:  
-    - Replace NVL with COALESCE
-    - Replace Oracle string/date/numeric functions with their Databricks SQL counterparts where needed
-    - Update SYSDATE and related functions to their Databricks equivalents (e.g., use CURRENT_DATE or CURRENT_TIMESTAMP except where context requires otherwise)
-  - Transform unsupported Oracle constructs or data types (like hierarchical queries using CONNECT BY, procedural blocks, or specific PL/SQL syntax), using standard SQL, common table expressions, or supported Databricks SQL features.
-  - Remove or rewrite Oracle-only features (such as PL/SQL control flow, cursors, or functions not available in Databricks SQL).
-  - Ensure the result maintains all logic and data transformations of the original, even if structural changes are needed.
-  - Review data types for compatibility. For instance, adjust Oracle NUMBER types with precision/scale not supported in Databricks.
-  - Translate all expressions thoroughly, do not omit or skip any lines. Provide a complete conversion.
+#   Conversion rules you MUST follow:
+#   - Ensure all Oracle-specific functions and expressions are mapped to their direct Databricks SQL equivalents. For example:  
+#     - Replace NVL with COALESCE
+#     - Replace Oracle string/date/numeric functions with their Databricks SQL counterparts where needed
+#     - Update SYSDATE and related functions to their Databricks equivalents (e.g., use CURRENT_DATE or CURRENT_TIMESTAMP except where context requires otherwise)
+#   - Transform unsupported Oracle constructs or data types (like hierarchical queries using CONNECT BY, procedural blocks, or specific PL/SQL syntax), using standard SQL, common table expressions, or supported Databricks SQL features.
+#   - Remove or rewrite Oracle-only features (such as PL/SQL control flow, cursors, or functions not available in Databricks SQL).
+#   - Ensure the result maintains all logic and data transformations of the original, even if structural changes are needed.
+#   - Review data types for compatibility. For instance, adjust Oracle NUMBER types with precision/scale not supported in Databricks.
+#   - Translate all expressions thoroughly, do not omit or skip any lines. Provide a complete conversion.
 
-  Return only the valid Databricks SQL query as the final output.
+#   Return only the valid Databricks SQL query as the final output.
