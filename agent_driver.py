@@ -160,6 +160,10 @@
 # MAGIC     return workflow.compile()
 # MAGIC
 # MAGIC
+# MAGIC # def set_prompt_query_pretext(query_pretext: str = ""):
+# MAGIC #     system_prompt = system_prompt.replace("{query_pretext}", query_pretext)
+# MAGIC
+# MAGIC
 # MAGIC class LangGraphChatAgent(ChatAgent):
 # MAGIC     def __init__(self, agent: CompiledStateGraph):
 # MAGIC         self.agent = agent
@@ -170,6 +174,7 @@
 # MAGIC         context: Optional[ChatContext] = None,
 # MAGIC         custom_inputs: Optional[dict[str, Any]] = None,
 # MAGIC     ) -> ChatAgentResponse:
+# MAGIC         print(messages)
 # MAGIC         request = {"messages": self._convert_messages_to_dict(messages)}
 # MAGIC
 # MAGIC         messages = []
@@ -217,7 +222,14 @@ dbutils.library.restartPython()
 
 from agent import AGENT
 
-response = AGENT.predict({"messages": [{"role": "user", "content": "select * from Employees where nvl(emp_dept, 0) > 0"}]})
+query = f"""
+NVL(
+                            (
+                                SELECT emp_id FROM Employees WHERE DepartmentID = ds.DepartmentID
+                            )
+                        , 2)
+"""
+response = AGENT.predict({"messages": [{"role": "user", "content": query}]})
 for msg in response.messages:
     if msg.role == "assistant":
         print(msg.content)
