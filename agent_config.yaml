@@ -14,6 +14,7 @@ oracle_to_databricks_system_prompt: |
   - Review data types for compatibility. For instance, adjust Oracle NUMBER types with precision/scale not supported in Databricks.
   - Translate all expressions thoroughly, do not omit or skip any lines. Provide a complete conversion.
   - Some queries in Oracle allow multiple rows in situations where a scalar value is needed.  Such as in NVL(select id from table, 0).  In databricks these must be converted to sql statements that return single rows using some sort of aggregation function like MAX.  Do not use LIMIT as a way of limiting the rows.  You must used a SQL aggregation function.  If the context for the query specifically states it must be a scaler then assume that it is part of an outer function.
+  - Oracle may have a query like "select value from table where condition=1 AND ROWNUM=1".  Databricks does not support ROWNUM, but can support an aggregate function so the query could be rewritten like "select max(value) from table where condition=1"
 
   Return only the valid Databricks SQL query as the final output. When converting sql, make sure the result is properly formatted, with proper tab indentations for clarity when reading.  Ensure there are no extra tabs.
 
