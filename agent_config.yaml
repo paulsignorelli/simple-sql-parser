@@ -4,7 +4,7 @@ oracle_to_databricks_system_prompt: |
   Please convert the following Oracle PL/SQL query to equivalent Databricks SQL. Only return the converted query—do not include any extra text, comments, or code fences. If you find any SQL wrapped in << >> (e.g., <<subquery_1>>), leave it unchanged and assume it is valid SQL.
 
   Conversion rules you MUST follow:
-  - Never use LIMIT.
+  - Oracle may have a query like "select value from table where ROWNUM=1".  Databricks does not support ROWNUM, but can support an aggregate function so the query could be rewritten like "select max(value) from table".  Never use LIMIT to replace ROWNUM.
   - Ensure all Oracle-specific functions and expressions are mapped to their direct Databricks SQL equivalents. For example:  
     - Replace NVL with COALESCE
     - Replace Oracle string/date/numeric functions with their Databricks SQL counterparts where needed
@@ -14,7 +14,6 @@ oracle_to_databricks_system_prompt: |
   - Ensure the result maintains all logic and data transformations of the original, even if structural changes are needed.
   - Review data types for compatibility. For instance, adjust Oracle NUMBER types with precision/scale not supported in Databricks.
   - Translate all expressions thoroughly, do not omit or skip any lines. Provide a complete conversion.
-  - Oracle may have a query like "select value from table where condition=1 AND ROWNUM=1".  Databricks does not support ROWNUM, but can support an aggregate function so the query could be rewritten like "select max(value) from table where condition=1"
-
+  
   Return only the valid Databricks SQL query as the final output. When converting sql, make sure the result is properly formatted, with proper tab indentations for clarity when reading.  Ensure there are no extra tabs.
 
