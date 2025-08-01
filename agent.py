@@ -32,7 +32,46 @@ set_uc_function_client(client)
 ############################################
 # Define your LLM endpoint and system prompt
 ############################################
+
+import os
+import pandas as pd
 import yaml
+
+import os
+import pandas as pd
+
+def build_example_string(csv_path=None):
+    """
+    Loads a CSV and builds a formatted string of examples.
+    - If csv_path is provided and exists, uses that.
+    - If csv_path is None or doesn't exist, falls back to EXAMPLES_FILE env variable.
+    - Ensures the final chosen path exists before loading.
+    """
+    # Check if provided path is valid
+    if csv_path and os.path.exists(csv_path):
+        final_path = csv_path
+    else:
+        # Try environment variable
+        env_file = os.getenv("ORACLE_TO_DATABRICKS_EXAMPLE_FILE")
+        if env_file and os.path.exists(env_file):
+            final_path = env_file
+        else:
+            print("CSV file not found. Neither provided path nor environment variable 'EXAMPLES_FILE' is valid.")
+            return ""
+
+    df = pd.read_csv(final_path)
+
+    output = []
+    for _, row in df.iterrows():
+        formatted = (
+            f"Oracle:\n{row['oracle_query']}\n"
+            f"INCORRECT (Do NOT do this):\n{row['incorrect_query']}\n"
+            f"CORRECT (DO this):\n{row['correct_query']}\n\n"
+        )
+        output.append(formatted)
+
+    return "".join(output).strip()
+
 with open("agent_config.yaml", "r") as file:
     prompts = yaml.safe_load(file)
 
@@ -42,6 +81,10 @@ llm = ChatDatabricks(endpoint=LLM_ENDPOINT_NAME)
 
 # system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
 system_prompt = prompts["oracle_to_databricks_system_prompt"]
+example_file = prompts.get("example_file", None)
+example_string = build_example_string(example_file)
+system_prompt = system_prompt.replace("{example_string}", example_string)
+print(system_prompt)
 
 ###############################################################################
 ## Define tools for your agent, enabling it to retrieve data or take actions

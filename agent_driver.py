@@ -63,7 +63,46 @@
 # MAGIC ############################################
 # MAGIC # Define your LLM endpoint and system prompt
 # MAGIC ############################################
+# MAGIC
+# MAGIC import os
+# MAGIC import pandas as pd
 # MAGIC import yaml
+# MAGIC
+# MAGIC import os
+# MAGIC import pandas as pd
+# MAGIC
+# MAGIC def build_example_string(csv_path=None):
+# MAGIC     """
+# MAGIC     Loads a CSV and builds a formatted string of examples.
+# MAGIC     - If csv_path is provided and exists, uses that.
+# MAGIC     - If csv_path is None or doesn't exist, falls back to EXAMPLES_FILE env variable.
+# MAGIC     - Ensures the final chosen path exists before loading.
+# MAGIC     """
+# MAGIC     # Check if provided path is valid
+# MAGIC     if csv_path and os.path.exists(csv_path):
+# MAGIC         final_path = csv_path
+# MAGIC     else:
+# MAGIC         # Try environment variable
+# MAGIC         env_file = os.getenv("ORACLE_TO_DATABRICKS_EXAMPLE_FILE")
+# MAGIC         if env_file and os.path.exists(env_file):
+# MAGIC             final_path = env_file
+# MAGIC         else:
+# MAGIC             print("CSV file not found. Neither provided path nor environment variable 'EXAMPLES_FILE' is valid.")
+# MAGIC             return ""
+# MAGIC
+# MAGIC     df = pd.read_csv(final_path)
+# MAGIC
+# MAGIC     output = []
+# MAGIC     for _, row in df.iterrows():
+# MAGIC         formatted = (
+# MAGIC             f"Oracle:\n{row['oracle_query']}\n"
+# MAGIC             f"INCORRECT (Do NOT do this):\n{row['incorrect_query']}\n"
+# MAGIC             f"CORRECT (DO this):\n{row['correct_query']}\n\n"
+# MAGIC         )
+# MAGIC         output.append(formatted)
+# MAGIC
+# MAGIC     return "".join(output).strip()
+# MAGIC
 # MAGIC with open("agent_config.yaml", "r") as file:
 # MAGIC     prompts = yaml.safe_load(file)
 # MAGIC
@@ -73,6 +112,10 @@
 # MAGIC
 # MAGIC # system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
 # MAGIC system_prompt = prompts["oracle_to_databricks_system_prompt"]
+# MAGIC example_file = prompts.get("example_file", None)
+# MAGIC example_string = build_example_string(example_file)
+# MAGIC system_prompt = system_prompt.replace("{example_string}", example_string)
+# MAGIC print(system_prompt)
 # MAGIC
 # MAGIC ###############################################################################
 # MAGIC ## Define tools for your agent, enabling it to retrieve data or take actions
