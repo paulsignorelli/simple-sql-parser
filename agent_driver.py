@@ -90,6 +90,7 @@
 # MAGIC             print("CSV file not found. Neither provided path nor environment variable 'EXAMPLES_FILE' is valid.")
 # MAGIC             return ""
 # MAGIC
+# MAGIC     print(f"!!!!! final_path: {final_path}")
 # MAGIC     df = pd.read_csv(final_path)
 # MAGIC
 # MAGIC     output = []
@@ -114,8 +115,9 @@
 # MAGIC system_prompt = prompts["oracle_to_databricks_system_prompt"]
 # MAGIC example_file = prompts.get("example_file", None)
 # MAGIC example_string = build_example_string(example_file)
-# MAGIC system_prompt = system_prompt.replace("{example_string}", example_string)
-# MAGIC print(system_prompt)
+# MAGIC print(f"!!!!!! example_string: {example_string}")
+# MAGIC system_prompt = system_prompt.format(examples=example_string)
+# MAGIC print(f"\n\nsystem_prompt\n\n{system_prompt}")
 # MAGIC
 # MAGIC ###############################################################################
 # MAGIC ## Define tools for your agent, enabling it to retrieve data or take actions
@@ -217,7 +219,7 @@
 # MAGIC         context: Optional[ChatContext] = None,
 # MAGIC         custom_inputs: Optional[dict[str, Any]] = None,
 # MAGIC     ) -> ChatAgentResponse:
-# MAGIC         print(messages)
+# MAGIC         # print(messages)
 # MAGIC         request = {"messages": self._convert_messages_to_dict(messages)}
 # MAGIC
 # MAGIC         messages = []
@@ -263,12 +265,15 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
+import os
+os.environ["ORACLE_TO_DATABRICKS_EXAMPLE_FILE"] = "/Volumes/users/paul_signorelli/files/example_queries.csv"
+
 from agent import AGENT
 
 query = f"""
 NVL(
                             (
-                                SELECT emp_id FROM Employees WHERE DepartmentID = ds.DepartmentID
+                                SELECT emp_id FROM Employees WHERE ROWNUM=1
                             )
                         , 2)
 """

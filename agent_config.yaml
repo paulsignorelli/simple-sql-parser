@@ -1,5 +1,7 @@
-llm_endpoint_name: databricks-claude-sonnet-4
+# llm_endpoint_name: databricks-claude-sonnet-4
 # llm_endpoint_name: databricks-claude-3-7-sonnet
+llm_endpoint_name: databricks-llama-4-maverick
+example_file: /Volumes/users/paul_signorelli/files/example_queries.csv
 oracle_to_databricks_system_prompt: |
   Please convert the following Oracle PL/SQL query to equivalent Databricks SQL. Only return the converted query—do not include any extra text, comments, or code fences. If you find any SQL wrapped in << >> (e.g., <<subquery_1>>), leave it unchanged and assume it is valid SQL.
 

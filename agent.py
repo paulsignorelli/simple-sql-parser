@@ -59,6 +59,7 @@ def build_example_string(csv_path=None):
             print("CSV file not found. Neither provided path nor environment variable 'EXAMPLES_FILE' is valid.")
             return ""
 
+    print(f"!!!!! final_path: {final_path}")
     df = pd.read_csv(final_path)
 
     output = []
@@ -83,8 +84,9 @@ llm = ChatDatabricks(endpoint=LLM_ENDPOINT_NAME)
 system_prompt = prompts["oracle_to_databricks_system_prompt"]
 example_file = prompts.get("example_file", None)
 example_string = build_example_string(example_file)
-system_prompt = system_prompt.replace("{example_string}", example_string)
-print(system_prompt)
+print(f"!!!!!! example_string: {example_string}")
+system_prompt = system_prompt.format(examples=example_string)
+print(f"\n\nsystem_prompt\n\n{system_prompt}")
 
 ###############################################################################
 ## Define tools for your agent, enabling it to retrieve data or take actions
@@ -186,7 +188,7 @@ class LangGraphChatAgent(ChatAgent):
         context: Optional[ChatContext] = None,
         custom_inputs: Optional[dict[str, Any]] = None,
     ) -> ChatAgentResponse:
-        print(messages)
+        # print(messages)
         request = {"messages": self._convert_messages_to_dict(messages)}
 
         messages = []
