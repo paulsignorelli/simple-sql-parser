@@ -1,6 +1,6 @@
-# llm_endpoint_name: databricks-claude-sonnet-4
+llm_endpoint_name: databricks-claude-sonnet-4
 # llm_endpoint_name: databricks-claude-3-7-sonnet
-llm_endpoint_name: databricks-llama-4-maverick
+# llm_endpoint_name: databricks-llama-4-maverick
 # example_file: /Volumes/users/paul_signorelli/files/example_queries.csv
 example_file: example_queries_state_street.csv
 oracle_to_databricks_system_prompt: |
