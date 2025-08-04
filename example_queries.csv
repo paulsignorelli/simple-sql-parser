@@ -1,0 +1,5 @@
+oracle_query,incorrect_query,correct_query
+select id from customer where rownum=1,select id from customer limit 1,select max(id) from customer
+select value from orders where rownum=1,select value from orders limit 1,select max(value) from orders
+select * from employee where rownum=1,select * from employee limit 1,"select * from (select *, row_number() over (order by id) as rn from employee) t where rn = 1"
+SELECT emp_id FROM Employees WHERE ROWNUM=1,"SELECT * FROM ( SELECT emp_id, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn FROM Employees ) t WHERE rn = 1","select * from (select *, row_number() over (order by id) as rn from employee) t where rn = 1"
