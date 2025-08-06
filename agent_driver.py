@@ -112,11 +112,16 @@
 # MAGIC llm = ChatDatabricks(endpoint=LLM_ENDPOINT_NAME)
 # MAGIC
 # MAGIC # system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
-# MAGIC system_prompt = prompts["oracle_to_databricks_system_prompt"]
-# MAGIC example_file = prompts.get("example_file", None)
-# MAGIC example_string = build_example_string(example_file)
-# MAGIC print(f"!!!!!! example_string: {example_string}")
-# MAGIC system_prompt = system_prompt.format(examples=example_string)
+# MAGIC # system_prompt = prompts["oracle_to_databricks_system_prompt"]
+# MAGIC system_prompt_file = prompts["oracle_to_databricks_system_prompt_file"]
+# MAGIC with open(system_prompt_file, "r") as f:
+# MAGIC     system_prompt = f.read()
+# MAGIC
+# MAGIC # example_file = prompts.get("example_file", None)
+# MAGIC # example_string = build_example_string(example_file)
+# MAGIC # print(f"!!!!!! example_string: {example_string}")
+# MAGIC # system_prompt = system_prompt.format(examples=example_string)
+# MAGIC
 # MAGIC print(f"\n\nsystem_prompt\n\n{system_prompt}")
 # MAGIC
 # MAGIC ###############################################################################
@@ -265,22 +270,285 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
-import os
-os.environ["ORACLE_TO_DATABRICKS_EXAMPLE_FILE"] = "/Volumes/users/paul_signorelli/files/example_queries.csv"
-
 from agent import AGENT
 
+# COMMAND ----------
+
+import re
+from typing import List, Dict
+
+def extract_sql_sections(message: str) -> List[Dict[str, str]]:
+    """
+    Extracts all SQL code blocks (```sql ... ```) and associates them 
+    with the nearest preceding section heading (e.g., 'Oracle', 'Databricks').
+    Also appends a dictionary containing the full message.
+    
+    Returns:
+        [
+            {"section": "Original Oracle SQL", "sql": "NVL(...)"},
+            {"section": "Converted Databricks SQL", "sql": "COALESCE(...)"},
+            {"section": "FULL_MESSAGE", "sql": "<entire message>"}
+        ]
+    """
+    results = []
+    
+    # Find all headings and their positions
+    headings = [(m.start(), m.group(1).strip()) 
+                for m in re.finditer(r"##\s*(.*?)\s*:", message)]
+    
+    # Find all SQL code blocks
+    for sql_match in re.finditer(r"```sql\s*([\s\S]*?)\s*```", message, re.IGNORECASE):
+        sql_start = sql_match.start()
+        sql_code = sql_match.group(1).strip()
+        
+        # Find the closest heading before this SQL block
+        section_name = "Unknown"
+        for pos, heading in reversed(headings):
+            if pos < sql_start:
+                section_name = heading
+                break
+        
+        results.append({
+            "section": section_name,
+            "sql": sql_code
+        })
+    
+    # Add full message as a separate entry
+    results.append({"section": "FULL_MESSAGE", "sql": message.strip()})
+    
+    return results
+
+
+# # Example usage
+# msg_content = """
+# # Oracle to Databricks SQL Conversion
+
+# ## Original Oracle SQL:
+# ```sql
+# NVL(
+#     (
+#         SELECT emp_id FROM Employees WHERE ROWNUM=1
+#     )
+# , 2)
+
+
+# COMMAND ----------
+
+import re
+
 query = f"""
-NVL(
-                            (
-                                SELECT emp_id FROM Employees WHERE ROWNUM=1
-                            )
-                        , 2)
+
+
+WITH
+DeptStats AS (
+    SELECT
+        DepartmentID,
+        SUM(Salary) AS TotalDeptSalary,
+        COUNT(*) AS NumEmployees,
+        AVG(Salary) AS AvgDeptSalary
+    FROM
+        Employees
+    GROUP BY
+        DepartmentID
+),
+EmpProjects AS (
+    SELECT
+        EmployeeID,
+        COUNT(ProjectID) AS ProjectsCompleted,
+        MAX(CompletedDate) AS LastProjectDate,
+        YEAR(MAX(CompletedDate)) AS LastProjectYear
+    FROM
+        Projects
+    WHERE
+        Status = 'Completed'
+    GROUP BY
+        EmployeeID
+)
+SELECT
+    e.EmployeeID,
+    UPPER(e.Name) AS Name,
+    d.Name AS Department,
+    CASE
+        WHEN e.Salary > (
+            SELECT AVG(Salary)
+            FROM Employees
+            WHERE DepartmentID = e.DepartmentID
+        ) THEN CONCAT('Above Average (', CAST(e.Salary AS VARCHAR), ')')
+        ELSE 'Average or Below'
+    END AS SalaryStatus,
+    -- some remark here,
+    CASE
+        WHEN    rsm.investment_type = 'BL'
+            AND NVL (psah.acrd_cd, 'N') NOT IN ('Y', 'V') -- story 897300
+        THEN
+            NVL (
+                (SELECT wacoupon
+                   FROM stg_wso_pos_acr_ame
+                  WHERE     portfolio_fund_id = psah.cal_dt
+                        AND asofdate = psah.cal_dt
+                        AND asset_primaryud = psah.asset_id
+                        AND rec_typ_cd = 'POS'
+                        AND ROWNUM=1),
+                0)
+        ELSE
+            psah.int_rt
+    END
+        AS pos_int_it,  
+    ep.ProjectsCompleted,
+    YEAR(e.HireDate) AS HireYear,
+    MONTH(e.HireDate) AS HireMonth,
+    COALESCE(ep.LastProjectYear, 'N/A') AS LastProjectYear
+FROM
+    Employees e
+    JOIN Departments d ON e.DepartmentID = d.DepartmentID
+    LEFT JOIN EmpProjects ep ON e.EmployeeID = ep.EmployeeID
+WHERE
+    e.EmployeeID IN (
+        SELECT
+            e2.EmployeeID
+        FROM
+            Employees e2
+            JOIN Departments d2 ON e2.DepartmentID = d2.DepartmentID
+            LEFT JOIN EmpProjects ep2 ON e2.EmployeeID = ep2.EmployeeID
+        WHERE
+            e2.Salary > (
+                SELECT AVG(Salary)
+                FROM Employees
+                WHERE DepartmentID = e2.DepartmentID
+            )
+    )
+UNION ALL
+SELECT
+    NULL AS EmployeeID,
+    NULL AS Name,
+    d.Name AS Department,
+    CONCAT('Department Total: ', CAST(ds.TotalDeptSalary AS VARCHAR)) AS SalaryStatus,
+    ds.NumEmployees AS ProjectsCompleted,
+    NULL AS HireYear,
+    NULL AS HireMonth,
+    NULL AS LastProjectYear,
+    SELCT region_id FROM regoins WHERE ROWNUM=1,
+
+'col1' as col1,
+'col2' as col2,
+'col3' as col3,
+'col4' as col4,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),'x')
+ELSE 0 END as col5,
+myfunc_from(0.2260155996892257) as col6,
+'col7' as col7,
+'col8' as col8,
+'col9' as col9,
+'col10' as col10,
+'col11' as col11,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees JOIN dept ON Employees.dept_id = dept.dept_id
+WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col12,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),2)
+ELSE 0 END as col13,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),'x')
+ELSE 0 END as col14,
+'col15' as col15,
+'col16' as col16,
+'col17' as col17,
+'col18' as col18,
+'col19' as col19,
+'col20' as col20,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),'x')
+ELSE 0 END as col21,
+'col22' as col22,
+'col23' as col23,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees JOIN dept ON Employees.dept_id = dept.dept_id
+WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col24,
+'col25' as col25,
+'col26' as col26,
+'col27' as col27,
+'col28' as col28,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees JOIN dept ON Employees.dept_id = dept.dept_id
+WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col29,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),2)
+ELSE 0 END as col30,
+'col31' as col31,
+'col32' as col32,
+'col33' as col33,
+'col34' as col34,
+'col35' as col35,
+myfunc_from(0.23160372299847443) as col36,
+'col37' as col37,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),'x')
+ELSE 0 END as col38,
+'col39' as col39,
+'col40' as col40,
+'col41' as col41,
+'col42' as col42,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),2)
+ELSE 0 END as col43,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees JOIN dept ON Employees.dept_id = dept.dept_id
+WHERE DepartmentID = ds.DepartmentID),0)
+ELSE 0 END as col44,
+'col45' as col45,
+myfunc_fromchar(0.29850520193203534) as col46,
+'col47' as col47,
+'col48' as col48,
+'col49' as col49,
+'col50' as col50,
+'col51' as col51,
+CASE WHEN ds.TotalDeptSalary > 100000 AND ds.TotalDeptSalary < 200000 AND NVL(a.emp_class, 'N') NOT IN ('A', 'B') -- story 1234
+THEN NVL((SELECT id FROM Employees WHERE DepartmentID = ds.DepartmentID),2)
+ELSE 0 END as col52,
+'col53' as col53,
+'col54' as col54,
+'col55' as col55,
+'col56' as col56,
+'col57' as col57,
+'col58' as col58,
+'col59' as col59
+FROM
+    DeptStats ds
+    JOIN Departments d ON ds.DepartmentID = d.DepartmentID;
+
 """
-response = AGENT.predict({"messages": [{"role": "user", "content": query}]})
+response = AGENT.predict({"messages": [{"role": "user", "content": f"Convert the following sql to Databricks\n\n{query}"}]})
+
+sql_block = None
 for msg in response.messages:
     if msg.role == "assistant":
-        print(msg.content)
+        # pattern = (
+        #     r"##\s*Converted\s+Databricks\s+SQL:\s*"
+        #     r"(?:```sql\s*([\s\S]*?)\s*```|sql\s*([\s\S]*?)(?:\n##|\Z))"
+        # )
+        # match = re.search(pattern, msg.content, re.DOTALL)
+        # if match:
+        #     sql_block = match.group(1)
+        #     break
+        sql_block = extract_sql_sections(msg.content)
+        break
+
+print(sql_block)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import explode, col
+df = spark.createDataFrame([(sql_block,)], ["response"])
+df_exploded = df.select(explode(col("response")).alias("item"))
+df_final = df_exploded.select(
+    col("item.section").alias("section"),
+    col("item.sql").alias("sql")
+)
+display(df_final)
 
 # COMMAND ----------
 

@@ -81,11 +81,16 @@ LLM_ENDPOINT_NAME = prompts["llm_endpoint_name"]
 llm = ChatDatabricks(endpoint=LLM_ENDPOINT_NAME)
 
 # system_prompt = """Please covert the following Oracle SQL query to Databricks SQL. Just return the query, no other content, including ```sql. If you see any sql that is wrapped in << >>, for example <<subquery_1>>, assume it is valid sql and leave it as is.  I need a complete conversion, do not skip any lines"""
-system_prompt = prompts["oracle_to_databricks_system_prompt"]
-example_file = prompts.get("example_file", None)
-example_string = build_example_string(example_file)
-print(f"!!!!!! example_string: {example_string}")
-system_prompt = system_prompt.format(examples=example_string)
+# system_prompt = prompts["oracle_to_databricks_system_prompt"]
+system_prompt_file = prompts["oracle_to_databricks_system_prompt_file"]
+with open(system_prompt_file, "r") as f:
+    system_prompt = f.read()
+
+# example_file = prompts.get("example_file", None)
+# example_string = build_example_string(example_file)
+# print(f"!!!!!! example_string: {example_string}")
+# system_prompt = system_prompt.format(examples=example_string)
+
 print(f"\n\nsystem_prompt\n\n{system_prompt}")
 
 ###############################################################################

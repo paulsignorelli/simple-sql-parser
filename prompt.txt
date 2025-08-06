@@ -1,0 +1,199 @@
+# Oracle PL/SQL to Databricks SQL Conversion Prompt
+
+## Task Description
+
+Convert Oracle PL/SQL queries, views, and procedures to Databricks SQL, ensuring compatibility while maintaining the original logic and functionality.  Only return the concverted sql code, do not add any other context, headers, sections titles, or explanation.  Also do not include any output formatting tags such as ```sql or ```.
+
+
+## Conversion Rules
+
+1. **Correlated Subqueries**:
+   - Databricks doesn't support uncorrelated scalar subqueries
+   - Replace with Common Table Expressions (CTEs) and JOINs
+   - Use window functions like FIRST_VALUE() or ROW_NUMBER() to simulate ROWNUM behavior
+
+2. **ROWNUM Handling**:
+   - Replace `WHERE ROWNUM = 1` with window functions:
+     ```sql
+     -- Oracle
+     SELECT column FROM table WHERE ROWNUM = 1
+
+     -- Databricks
+     SELECT column FROM (
+       SELECT column, ROW_NUMBER() OVER (ORDER BY some_column) AS rn
+       FROM table
+     ) WHERE rn = 1
+
+     ```
+
+3. **Function Replacements**:
+   - Replace `NVL()` with `COALESCE()`
+   - Keep custom functions (like `fdr_get_numberfromdcmraw`) assuming they're registered in Databricks
+
+4. **Data Type Conversions**:
+   - Replace `VARCHAR2` with `STRING`
+   - Adjust date format strings: `'YYYYMMDD'` → `'yyyyMMdd'`
+
+5. **JOIN Syntax**:
+   - Convert comma-separated tables with WHERE conditions to ANSI JOIN syntax:
+     ```sql
+     -- Oracle
+     FROM table1, table2 WHERE table1.id = table2.id
+
+     -- Databricks
+     FROM table1 JOIN table2 ON table1.id = table2.id
+     ```
+
+6. **Schema References**:
+   - Maintain schema prefixes if needed (e.g., `csw_audit.table_name`)
+
+ 
+ ## Conversion Process
+
+ 1. **Analyze the Original Query**:
+   - Identify correlated subqueries
+   - Note any ROWNUM usages
+   - Check for Oracle-specific functions and syntax
+
+ 2. **Create CTEs for Subqueries**:
+   - For each subquery that returns a single row per group, create a CTE with window functions
+   - Example:
+     ```sql
+     WITH subquery_data AS (
+       SELECT
+         key_column,
+         value_column,
+         ROW_NUMBER() OVER (PARTITION BY key_column ORDER BY value_column) AS rn
+       FROM source_table
+     )
+     ```
+
+3. **Convert Main Query**:
+   - Replace subquery references with JOINs to CTEs
+   - Update function calls and data types
+   - Maintain all calculations and business logic
+
+4. **Test and Validate**:
+   - Ensure the converted query produces the same results
+   - Check for any remaining Databricks incompatibilities
+
+
+## Examples
+
+### Example 1: Converting Correlated Subqueries
+
+**Oracle:**
+
+```sql
+SELECT
+  t.id,
+  t.name,
+  (SELECT class_name FROM cls_data WHERE ssb_fund = t.fund_id AND basis = t.basis) AS class_name,
+  (SELECT ratio_1 FROM dp_class_ratio WHERE fund_id = t.fund_id AND basis = t.basis AND effective_dt = t.date AND ROWNUM = 1) AS ratio
+FROM main_table t
+```
+
+**Databricks:**
+
+```sql
+WITH class_data_info AS (
+  SELECT
+    ssb_fund,
+    basis,
+    class_name
+  FROM cls_data
+),
+ratio_data AS (
+  SELECT
+    fund_id,
+    basis,
+    effective_dt,
+    ratio_1,
+    ROW_NUMBER() OVER (PARTITION BY fund_id, basis, effective_dt ORDER BY ratio_1) AS rn
+  FROM dp_class_ratio
+)
+SELECT
+  t.id,
+  t.name,
+  cd.class_name,
+  rd.ratio_1 AS ratio
+FROM main_table t
+LEFT JOIN class_data_info cd
+  ON cd.ssb_fund = t.fund_id AND cd.basis = t.basis
+LEFT JOIN ratio_data rd
+  ON rd.fund_id = t.fund_id
+  AND rd.basis = t.basis
+  AND rd.effective_dt = t.date
+  AND rd.rn = 1
+
+```
+
+### Example 2: Complex Case Expressions with Functions
+
+ **Oracle:**
+
+```sql
+SELECT
+  CASE
+    WHEN NVL(fdr_get_value(data, 10), 0) = 0 THEN 0
+    ELSE ROUND(fdr_get_value(data, 20) / fdr_get_value(data, 10), 2)
+  END AS calculated_value
+FROM data_table
+```
+
+**Databricks:**
+
+```sql
+SELECT
+  CASE
+    WHEN COALESCE(fdr_get_value(data, 10), 0) = 0 THEN 0
+    ELSE ROUND(fdr_get_value(data, 20) / fdr_get_value(data, 10), 2)
+  END AS calculated_value
+FROM data_table
+```
+
+### Example 3: Converting a Complete View
+
+ **Oracle:**
+
+```sql
+CREATE OR REPLACE VIEW example_view AS
+SELECT
+  a.id,
+  a.name,
+  b.value,
+  (SELECT x FROM table_c WHERE id = a.id AND ROWNUM = 1) AS x_value,
+  NVL(a.amount, 0) AS safe_amount,
+  TO_DATE(a.date_str, 'YYYYMMDD') AS converted_date
+FROM
+  table_a a,
+  table_b b
+WHERE
+  a.id = b.id
+```
+
+**Databricks:**
+
+```sql
+CREATE OR REPLACE VIEW example_view AS
+WITH x_values AS (
+  SELECT
+    id,
+    x,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY x) AS rn
+  FROM table_c
+)
+SELECT
+  a.id,
+  a.name,
+  b.value,
+  x.x AS x_value,
+  COALESCE(a.amount, 0) AS safe_amount,
+  TO_DATE(a.date_str, 'yyyyMMdd') AS converted_date
+FROM
+  table_a a
+JOIN
+  table_b b ON a.id = b.id
+LEFT JOIN
+  x_values x ON x.id = a.id AND x.rn = 1
+```
